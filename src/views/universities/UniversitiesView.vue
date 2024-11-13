@@ -3,14 +3,6 @@
     <SectionMain>
       <div class="flex justify-between items-center">
         <SectionTitleLineWithButton :icon="mdiSchool" title="Universities"/>
-        <div class="space-x-3 items-center flex">
-          <RouterLink to="import-university">
-            <BaseButton :icon="mdiFileImportOutline" type="button" outline color="info" label="Import Universities"/>
-          </RouterLink>
-          <RouterLink to="add-university">
-            <BaseButton type="button" color="info" label="Add University"/>
-          </RouterLink>
-        </div>
       </div>
 
       <template v-if="is_loading">
@@ -18,10 +10,13 @@
       </template>
       <template v-else>
         <div>
-
-          <div class="justify-end flex py-2">
+          <div class="justify-between flex py-2">
             <FormControl v-model="searchValue" @input="search()" type="text" :icon="mdiTableSearch" class="w-[400px]" placeholder="Search ... " borderless/>
+            <RouterLink to="/recommend-university">
+              <BaseButton type="button" color="info" label="Get Recommendation"/>
+            </RouterLink>
           </div>
+
           <CardBox has-table>
             <table>
               <thead>
@@ -100,7 +95,7 @@ import BaseLevel from '@/components/BaseLevel.vue'
 import CardBox from '@/components/CardBox.vue'
 import axios from "axios";
 import Swal from 'sweetalert2'
-import {Universty} from "../../types/Universty";
+import {Universty} from "../../types/universities/Universty";
 import FormControl from '@/components/FormControl.vue'
 
 const perPage = ref(10);

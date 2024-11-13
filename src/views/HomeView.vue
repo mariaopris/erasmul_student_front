@@ -1,123 +1,65 @@
-<script setup>
-import { computed, ref, onMounted } from 'vue'
-import { useMainStore } from '@/stores/main'
-import {
-  mdiAccountMultiple,
-  mdiCartOutline,
-  mdiChartTimelineVariant,
-  mdiMonitorCellphone,
-  mdiReload,
-  mdiChartPie
-} from '@mdi/js'
-import * as chartConfig from '@/components/Charts/chart.config.js'
-import LineChart from '@/components/Charts/LineChart.vue'
-import SectionMain from '@/components/SectionMain.vue'
-import CardBoxWidget from '@/components/CardBoxWidget.vue'
-import CardBox from '@/components/CardBox.vue'
-import TableSampleClients from '@/components/TableSampleClients.vue'
-import NotificationBar from '@/components/NotificationBar.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import CardBoxTransaction from '@/components/CardBoxTransaction.vue'
-import CardBoxClient from '@/components/CardBoxClient.vue'
-import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
-import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import SectionBannerStarOnGitHub from '@/components/SectionBannerStarOnGitHub.vue'
-
-const chartData = ref(null)
-
-const fillChartData = () => {
-  chartData.value = chartConfig.sampleChartData()
-}
-
-onMounted(() => {
-  fillChartData()
-})
-
-const mainStore = useMainStore()
-
-const clientBarItems = computed(() => mainStore.clients.slice(0, 4))
-
-const transactionBarItems = computed(() => mainStore.history)
-</script>
-
 <template>
   <LayoutAuthenticated>
-    <SectionMain>
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-        <CardBoxWidget
-          trend="12%"
-          trend-type="up"
-          color="text-emerald-500"
-          :icon="mdiAccountMultiple"
-          :number="512"
-          label="Clients"
-        />
-        <CardBoxWidget
-          trend="12%"
-          trend-type="down"
-          color="text-blue-500"
-          :icon="mdiCartOutline"
-          :number="7770"
-          prefix="$"
-          label="Sales"
-        />
-        <CardBoxWidget
-          trend="Overflow"
-          trend-type="alert"
-          color="text-red-500"
-          :icon="mdiChartTimelineVariant"
-          :number="256"
-          suffix="%"
-          label="Performance"
-        />
+    <div class="h-[670px] bg-cover bg-center flex items-center justify-center p-6" :style="{ backgroundImage: 'url(/public/dashboard.png)' }">
+      <div class="absolute inset-0 bg-black opacity-40"></div>
+
+      <div class="flex justify-between w-full space-x-10">
+        <div class="relative w-[70%] bg-white shadow-md rounded-lg p-8 space-y-6">
+          <div class="text-center">
+            <h1 class="text-2xl font-semibold text-gray-800">
+              How does <span class="text-blue-600 font-bold">Erasmus One</span> works?
+            </h1>
+          </div>
+
+          <div class="space-y-4">
+            <div class="p-4 bg-blue-50 rounded-lg shadow-sm">
+              <h2 class="text-lg font-medium text-blue-800">Step 1: Choose University</h2>
+              <p class="text-gray-600 mt-2">
+                Select your preferred destinations from <RouterLink to='/universities' class="underline text-blue-500">Universities</RouterLink> or
+                <RouterLink to="/recommend-university" class="underline text-blue-500">get recommendation</RouterLink>
+              </p>
+            </div>
+
+            <div class="p-4 bg-green-50 rounded-lg shadow-sm">
+              <h2 class="text-lg font-medium text-green-800">Step 2: Add an <RouterLink to="/applications" class="underline text-blue-500">Application</RouterLink></h2>
+            </div>
+
+            <div class="p-4 bg-yellow-50 rounded-lg shadow-sm">
+              <h2 class="text-lg font-medium text-yellow-800">Step 3: Complete your Learning Agreement (OLA)</h2>
+              <p class="text-gray-600 mt-2">
+                Fill your learning agreement <a href="https://www.learning-agreement.eu/" class="underline text-blue-500">here</a>.
+              </p>
+            </div>
+
+            <div class="p-4 bg-purple-50 rounded-lg shadow-sm">
+              <h2 class="text-lg font-medium text-purple-800">Step 4: Finish Application</h2>
+              <p class="text-gray-600 mt-2">
+                Get more info. (travel.upb)
+              </p>
+            </div>
+          </div>
+          <p class="text-sm text-center">If you have any problems with the app
+            <RouterLink to="/tickets"><span class="underline text-blue-500">contact us</span></RouterLink>.
+          </p>
+        </div>
+        <div class="relative w-[30%] bg-white shadow-md rounded-lg p-8 space-y-6">
+          <div class="bg-yellow-100 p-4 rounded-lg shadow-sm space-y-2">
+            <h2 class="text-xl font-semibold text-yellow-800">Announcements</h2>
+            <ul class="list-disc pl-6 text-gray-700">
+              <li>Our system will undergo maintenance on Friday, 9 PM - 11 PM.</li>
+              <li>New features are coming soon! Stay tuned for updates.</li>
+              <li>Check out the new user guidelines in the Help section.</li>
+            </ul>
+          </div>
+        </div>
       </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="flex flex-col justify-between">
-          <CardBoxTransaction
-            v-for="(transaction, index) in transactionBarItems"
-            :key="index"
-            :amount="transaction.amount"
-            :date="transaction.date"
-            :business="transaction.business"
-            :type="transaction.type"
-            :name="transaction.name"
-            :account="transaction.account"
-          />
-        </div>
-        <div class="flex flex-col justify-between">
-          <CardBoxClient
-            v-for="client in clientBarItems"
-            :key="client.id"
-            :name="client.name"
-            :login="client.login"
-            :date="client.created"
-            :progress="client.progress"
-          />
-        </div>
-      </div>
-
-      <SectionBannerStarOnGitHub class="mt-6 mb-6" />
-
-      <SectionTitleLineWithButton :icon="mdiChartPie" title="Trends overview">
-        <BaseButton :icon="mdiReload" color="whiteDark" @click="fillChartData" />
-      </SectionTitleLineWithButton>
-
-      <CardBox class="mb-6">
-        <div v-if="chartData">
-          <line-chart :data="chartData" class="h-96" />
-        </div>
-      </CardBox>
-
-      <SectionTitleLineWithButton :icon="mdiAccountMultiple" title="Clients" />
-
-      <NotificationBar color="info" :icon="mdiMonitorCellphone">
-        <b>Responsive table.</b> Collapses on mobile
-      </NotificationBar>
-
-      <CardBox has-table>
-        <TableSampleClients />
-      </CardBox>
-    </SectionMain>
+    </div>
   </LayoutAuthenticated>
 </template>
+
+<script setup>
+import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
+import NotificationBar from '@/components/NotificationBar.vue'
+import {mdiAlert} from '@mdi/js';
+
+</script>

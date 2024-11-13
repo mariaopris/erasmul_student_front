@@ -1,21 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Style from '@/views/StyleView.vue'
 import Home from '@/views/HomeView.vue'
 
 const routes = [
-  // {
-  //   meta: {
-  //     title: 'Select style'
-  //   },
-  //   path: '/',
-  //   name: 'style',
-  //   component: Style
-  // },
   {
     meta: {
       title: 'Dashboard'
     },
-    path: '/',
+    path: '/dashboard',
     name: 'dashboard',
     component: Home
   },
@@ -25,19 +16,14 @@ const routes = [
     component: () => import('../views/universities/UniversitiesView.vue')
   },
   {
-    path: '/add-university',
-    name: 'add-university',
-    component: () => import('../views/universities/AddUniversity.vue')
-  },
-  {
     path: '/edit-university/:id',
     name: 'edit-university',
     component: () => import('../views/universities/EditUniversity.vue')
   },
   {
-    path: '/import-university',
-    name: 'import-university',
-    component: () => import('../views/universities/ImportUniversities.vue')
+    path: '/recommend-university',
+    name: 'recommend-university',
+    component: () => import('../views/universities/RecommendUniversities.vue')
   },
   {
     path: '/students',
@@ -47,22 +33,27 @@ const routes = [
   {
     path: '/tickets',
     name: 'tickets',
-    component: () => import('../views/TicketsView.vue')
+    component: () => import('../views/tickets/TicketsView.vue')
   },
   {
     path: '/applications',
     name: 'applications',
-    component: () => import('../views/ApplicationsView.vue')
+    component: () => import('../views/applications/ApplicationsView.vue')
   },
   {
-    path: '/view-application',
+    path: '/view-application/:id',
     name: 'view-application',
-    component: () => import('../views/ViewApplication.vue')
+    component: () => import('../views/applications/ViewApplication.vue')
   },
   {
-    path: '/view-ticket',
+    path: '/add-application',
+    name: 'add-application',
+    component: () => import('../views/applications/AddApplication.vue')
+  },
+  {
+    path: '/view-ticket/:id',
     name: 'view-ticket',
-    component: () => import('../views/ViewTicket.vue')
+    component: () => import('../views/tickets/ViewTicket.vue')
   },
   {
     meta: {
@@ -100,9 +91,17 @@ const routes = [
     meta: {
       title: 'Login'
     },
-    path: '/login',
+    path: '/',
     name: 'login',
     component: () => import('@/views/LoginView.vue')
+  },
+  {
+    meta: {
+      title: 'Register'
+    },
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/RegisterView.vue')
   },
   {
     meta: {

@@ -1,8 +1,6 @@
 import {IscedCode} from "./IscedCode";
 import axios from "axios";
 import Swal from "sweetalert2";
-import {useRouter} from "vue-router";
-const router = useRouter()
 
 export class Universty {
   public id: number;
