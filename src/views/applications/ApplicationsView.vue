@@ -18,7 +18,6 @@
               <thead>
               <tr>
                 <th>Student Name</th>
-                <th>Faculty</th>
                 <th>Mobility</th>
                 <th>Status</th>
                 <th>Submitted At</th>
@@ -31,9 +30,6 @@
               <tr v-for="(application, application_index) in itemsPaginated">
                 <td data-label="Student Name">
                   {{ application.first_name }} {{application.last_name}}
-                </td>
-                <td data-label="Faculty">
-                  {{application.faculty.name}}
                 </td>
                 <td data-label="Mobility">
                   <p v-if="application.mobility_program === 'long'">Long-term</p>

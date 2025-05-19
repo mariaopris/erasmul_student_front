@@ -2,7 +2,10 @@
   <LayoutAuthenticated>
     <SectionMain>
       <div class="flex justify-between items-center">
-        <SectionTitleLineWithButton :icon="mdiSchool" title="Universities"/>
+        <SectionTitleLineWithButton :icon="mdiBook" title="Courses"/>
+        <RouterLink to="/add-course">
+          <BaseButton type="button" color="info" label="+Add Course"/>
+        </RouterLink>
       </div>
 
       <template v-if="is_loading">
@@ -13,44 +16,35 @@
           <div class="justify-end flex py-2">
             <FormControl v-model="searchValue" @input="search()" type="text" :icon="mdiTableSearch" class="w-[400px]" placeholder="Search ... " borderless/>
           </div>
-
           <CardBox has-table>
             <table>
               <thead>
               <tr>
                 <th>Name</th>
-                <th>Country</th>
-                <th>Erasmus Code</th>
-                <th>Years</th>
+                <th>University</th>
+                <th>Department</th>
                 <th />
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(university, university_index) in itemsPaginated" :key="university.id">
+              <tr v-for="(course, course_index) in itemsPaginated" :key="course.id">
                 <td data-label="Name">
-                  {{ university.name }}
+                  {{ course.name }}
                 </td>
                 <td data-label="Country">
-                  {{ university.country }}
+                  {{ course.university.name }}
                 </td>
-                <td data-label="Erasmus Code">
-                  {{ university.code }}
-                </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                  <small class="text-gray-500 dark:text-slate-400">
-                    <template v-for="(year, year_index) in university.years">
-                      {{year}} <span v-if="year_index <= university.years.length - 2">,</span>
-                    </template>
-                  </small>
+                <td data-label="Department">
+                  {{ course.department.name }}
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                   <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                    <BaseButton color="info" :icon="mdiEye" small :to="'edit-university/'+university.id" />
+                    <BaseButton color="info" :icon="mdiEye" small :to="'edit-course/'+course.id" />
                     <BaseButton
                       color="danger"
                       :icon="mdiTrashCan"
                       small
-                      @click="deleteUniversity(university.id, university_index)"
+                      @click="deleteCourse(course.id, course_index)"
                     />
                   </BaseButtons>
                 </td>
@@ -83,7 +77,7 @@
 <script setup lang="ts">
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import {mdiSchool, mdiTrashCan, mdiEye, mdiFileImportOutline,mdiTableSearch} from '@mdi/js'
+import {mdiBook, mdiTrashCan, mdiEye, mdiFileImportOutline,mdiTableSearch} from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import {computed, onMounted, ref} from "vue";
@@ -94,18 +88,19 @@ import axios from "axios";
 import Swal from 'sweetalert2'
 import {University} from "../../types/universities/University";
 import FormControl from '@/components/FormControl.vue'
+import {Course} from "../../types/universities/Course";
 
 const perPage = ref(10);
 const currentPage = ref(0);
 const itemsPaginated = computed(() =>
-  filtered_universities.value.slice(perPage.value * currentPage.value, perPage.value * (currentPage.value + 1))
+  filtered_courses.value.slice(perPage.value * currentPage.value, perPage.value * (currentPage.value + 1))
 );
 const is_loading = ref(true);
-const universities = ref<University[]>([]);
-const filtered_universities = ref<University[]>([]);
+const courses = ref<Course[]>([]);
+const filtered_courses = ref<Course[]>([]);
 const searchValue = ref('');
 
-const numPages = computed(() => Math.ceil(filtered_universities.value.length / perPage.value))
+const numPages = computed(() => Math.ceil(filtered_courses.value.length / perPage.value))
 
 const currentPageHuman = computed(() => currentPage.value + 1)
 
@@ -121,18 +116,18 @@ const pagesList = computed(() => {
 
 const search = () => {
   setTimeout(() => {
-    filtered_universities.value = universities.value.filter((university) => {
+    filtered_courses.value = courses.value.filter((course) => {
       return (
-        university.name.toLowerCase().includes(searchValue.value.toLowerCase()) ||
-        university.country.toLowerCase().includes(searchValue.value.toLowerCase())
+        course.name.toLowerCase().includes(searchValue.value.toLowerCase()) ||
+        course.university.name.toLowerCase().includes(searchValue.value.toLowerCase())
       );
     });
   }, 1000);
 }
 
-const deleteUniversity = (id: number, index: number) => {
+const deleteCourse = (id: number, index: number) => {
   Swal.fire({
-    title: 'Are you sure that you want to delete this university?',
+    title: 'Are you sure that you want to delete this course?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3085d6',
@@ -140,15 +135,15 @@ const deleteUniversity = (id: number, index: number) => {
     confirmButtonText: 'Yes'
   }).then((result) => {
     if (result.isConfirmed) {
-      axios.delete(`http://127.0.0.1:8000/api/universities/${id}`)
+      axios.delete(`http://127.0.0.1:8000/api/courses/${id}`)
         .then((response) => {
           Swal.fire({
             title: 'Success',
             icon: 'success',
-            html: 'University deleted successfully!',
+            html: 'Course deleted successfully!',
             showCancelButton: false,
           })
-          universities.value.splice(index,1);
+          courses.value.splice(index,1);
         })
         .catch((error) => {
           console.log('eroare: ', error);
@@ -157,14 +152,13 @@ const deleteUniversity = (id: number, index: number) => {
   })
 }
 
-const getUniversities = async () => {
+const getCourses = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/universities");
-    response.data.universities.forEach((university: any) => {
-      university.isced_codes = university.isced_codes.split(',');
-      universities.value.push(new University(university));
+    const response = await axios.get("http://127.0.0.1:8000/api/courses");
+    response.data.courses.forEach((course: any) => {
+      courses.value.push(new Course(course));
     })
-    filtered_universities.value = JSON.parse(JSON.stringify(universities.value));
+    filtered_courses.value = JSON.parse(JSON.stringify(courses.value));
   } catch (error) {
     console.log('error', error)
     Swal.fire({
@@ -177,6 +171,6 @@ const getUniversities = async () => {
 }
 
 onMounted(() => {
-  getUniversities();
+  getCourses();
 })
 </script>

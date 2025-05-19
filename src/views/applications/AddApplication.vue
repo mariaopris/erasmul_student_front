@@ -16,46 +16,82 @@
 
           <div class="grid grid-cols-2 space-x-3">
             <FormField label="First Name" required>
-              <FormControl v-model="application.first_name"/>
+              <FormControl v-model="application.first_name" disabled="true"/>
             </FormField>
 
             <FormField label="Last Name" required>
-              <FormControl v-model="application.last_name"/>
+              <FormControl v-model="application.last_name" disabled="true"/>
             </FormField>
           </div>
 
           <div class="grid grid-cols-2 space-x-3">
             <FormField label="Email" required>
-              <FormControl v-model="application.email" type="email"/>
+              <FormControl v-model="application.email" type="email" disabled="true"/>
             </FormField>
             <FormField label="Date of birth" required>
               <FormControl v-model="application.date_of_birth" type="date"/>
             </FormField>
           </div>
 
-          <FormField label="Phone (including country prefix)" required>
-            <FormControl v-model="application.phone" class="w-1/2"/>
-          </FormField>
-
-          <BaseDivider />
-
           <div class="grid grid-cols-2 space-x-3">
+            <FormField label="Phone (including country prefix)" required>
+              <FormControl v-model="application.phone"/>
+            </FormField>
             <FormField label="Identity Number" required>
               <FormControl v-model="application.id_number"/>
             </FormField>
+          </div>
 
-            <FormField label="Faculty" required>
-              <Multiselect v-model="application.faculty" :options="facultyOptions" :multiple="false" label="name" track-by="id"></Multiselect>
+          <BaseDivider />
+
+          <div class="mt-5">
+            <FormField label="Study cycle" required>
+              <div class="space-y-3">
+                <div class="flex space-x-14">
+                  <div class="flex space-x-3 items-center">
+                    <input v-model="application.current_study_year" value="Ba1" type="radio" />
+                    <span class="radio">Bachelor Year 1 🏫</span>
+                  </div>
+                  <div class="flex space-x-3 items-center">
+                    <input v-model="application.current_study_year" value="Ba2" type="radio" />
+                    <span class="radio">Bachelor Year 2 🎓</span>
+                  </div>
+                  <div class="flex space-x-3 items-center">
+                    <input v-model="application.current_study_year" value="Ba3" type="radio" />
+                    <span class="radio">Bachelor Year 3 📖</span>
+                  </div>
+                  <div class="flex space-x-3 items-center">
+                    <input v-model="application.current_study_year" value="Ba4" type="radio" />
+                    <span class="radio">Bachelor Year 4 🏆</span>
+                  </div>
+                </div>
+                <div class="flex space-x-14">
+                  <div class="flex space-x-3 items-center mr-1.5">
+                    <input v-model="application.current_study_year" value="Ma1" type="radio" />
+                    <span class="radio">Masters Year 1 🎓</span>
+                  </div>
+                  <div class="flex space-x-3 items-center">
+                    <input v-model="application.current_study_year" value="Ma2" type="radio" />
+                    <span class="radio">Masters Year 2 📘</span>
+                  </div>
+                </div>
+                <div class="flex space-x-14">
+                  <div class="flex space-x-3 items-center mr-1.5">
+                    <input v-model="application.current_study_year" value="PhD" type="radio" />
+                    <span class="radio">PhD 🧠</span>
+                  </div>
+                </div>
+              </div>
             </FormField>
           </div>
 
-          <div class="grid grid-cols-2 space-x-3">
-            <FormField label="Study cycle" required>
-              <FormControl v-model="application.study_cycle" :options="studyCycleOptions"/>
+          <div class="grid grid-cols-2 space-x-3 mt-5">
+            <FormField label="Home university" required>
+              <Multiselect v-model="home_university" :options="universities" :multiple="false" label="name" track-by="name"></Multiselect>
             </FormField>
 
-            <FormField label="Current year of study" required>
-              <FormControl v-model="application.current_study_year" :options="studyYearOptions"/>
+            <FormField label="Degree" required>
+              <Multiselect v-model="degree" :options="filteredDegrees()" :multiple="false" label="name" track-by="id"></Multiselect>
             </FormField>
           </div>
 
@@ -213,7 +249,7 @@ import FormField from '@/components/FormField.vue';
 import FormControl from '@/components/FormControl.vue';
 import BaseDivider from '@/components/BaseDivider.vue';
 import {mdiBookEdit} from '@mdi/js';
-import {Universty} from "../../types/universities/Universty";
+import {University} from "../../types/universities/University";
 import Multiselect from 'vue-multiselect';
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -224,9 +260,12 @@ import {mdiAlert} from '@mdi/js';
 import {useRouter} from "vue-router";
 import {AuthUser} from "../../types/AuthUser";
 import {useAuthStore} from "../../stores/auth";
+import {User} from "../../types/user/User";
+import {Degree} from "../../types/universities/Degree";
+import {Step} from "../../types/home/Step";
 
 const isced_codes = ref<IscedCode[]>([]);
-const universities = ref<Universty[]>([]);
+const universities = ref<University[]>([]);
 const is_loading = ref(true);
 const application = ref(new Application());
 const countries = ref([]);
@@ -237,56 +276,22 @@ const letter_file = ref(null);
 const records_file = ref(null);
 const diplomas_file = ref(null);
 const router = useRouter()
-
-const facultyOptions = [
-  { id: 0, name: 'Aerospace Engineering'},
-  { id: 1, name: 'Applied Sciences' },
-  { id: 2, name: 'Automatic Control and Computers' },
-  { id: 3, name: 'Biotechnical Systems Engineering ' },
-  { id: 4, name: 'Chemical Engineering and Biotechnologies' },
-  { id: 5, name: 'Electrical Engineering' },
-  { id: 6, name: 'Electronics, Telecommunications and Information Technology' },
-  { id: 7, name: 'Energy Engineering' },
-  { id: 8, name: 'Engineering in Foreign Languages' },
-  { id: 9, name: 'Entrepreneurship, Business Engineering and Management' },
-  { id: 10, name: 'Faculty of Economic Sciences and Law' },
-  { id: 11, name: 'Faculty of Educational Sciences, Social Sciences and Psychology' },
-  { id: 12, name: 'Faculty of Electronics, Communications and Computers' },
-  { id: 13, name: 'Faculty of Mechanics and Technology' },
-  { id: 14, name: 'Faculty of Sciences, Physical Education and Informatics' },
-  { id: 15, name: 'Faculty of Theology, Letters, History and Arts' },
-  { id: 16, name: 'Industrial Engineering and Robotics' },
-  { id: 17, name: 'IOSUD/CSUD - PhD Studies' },
-  { id: 18, name: 'Materials Science and Engineering' },
-  { id: 19, name: 'Mechanical Engineering and Mechatronics' }
-];
 const academicYearOptions = ['2024/2025','2025/2026'];
-const studyCycleOptions = [
-  'Bachelor or equivalent first cycle (EQF level 6)',
-  'Doctorate or equivalent third cycle (EQF level 8)',
-  'Master or equivalent second cycle (EQF level 7)',
-  'Short cycle (EQF level 5)',
-];
-const studyYearOptions = [
-  '1st Year',
-  '2nd Year',
-  '3th Year',
-  '4th Year',
-  '5th Year',
-  '6th Year'
-];
-
 const languageInput = ref(null);
 const idInput = ref(null);
 const cvInput = ref(null);
 const letterInput = ref(null);
 const recordsInput = ref(null);
 const diplomasInput = ref(null);
-const destination_1 = ref(new Universty());
-const destination_2 = ref(new Universty());
-const destination_3 = ref(new Universty());
-const user = ref(new AuthUser());
+const home_university = ref(new University());
+const destination_1 = ref(new University());
+const destination_2 = ref(new University());
+const destination_3 = ref(new University());
+const auth_user = ref(new AuthUser());
+const user = ref(new User());
 const auth = useAuthStore();
+const degrees = ref<Degree[]>([]);
+const degree = ref(new Degree());
 
 const handleFileSelect = (type: string) => {
   if(type === 'language') {
@@ -309,14 +314,26 @@ const handleFileSelect = (type: string) => {
   }
 }
 
+function filteredDegrees() {
+  let filtered_degrees = <Degree[]>[];
+  degrees.value.forEach((deg: Degree) => {
+    if(deg.university_id == home_university.value.id && application.value.current_study_year.includes(deg.level)) {
+      filtered_degrees.push(deg);
+    }
+  })
+
+  return filtered_degrees;
+}
+
 const submit = async () => {
   if(application.value.destination_type !== 'non_university') {
     application.value.destination_1 = String(destination_1.value.id);
     application.value.destination_2 = String(destination_2.value.id);
     application.value.destination_3 = String(destination_3.value.id);
   }
+  application.value.home_university = String(home_university.value.id);
+  application.value.faculty = String(degree.value.id);
   application.value.education_field = JSON.stringify(application.value.education_field);
-  application.value.faculty = JSON.stringify(application.value.faculty);
 
   try {
     await axios.post("http://127.0.0.1:8000/api/applications", {
@@ -335,7 +352,6 @@ const submit = async () => {
           phone: application.value.phone,
           id_number: application.value.id_number,
           faculty: application.value.faculty,
-          study_cycle: application.value.study_cycle,
           current_study_year: application.value.current_study_year,
           education_field: application.value.education_field,
           gpa: application.value.gpa,
@@ -345,6 +361,7 @@ const submit = async () => {
           mobility_start_date: application.value.mobility_start_date,
           mobility_end_date: application.value.mobility_end_date,
           destination_type: application.value.destination_type,
+          home_university: application.value.home_university,
           destination_1: application.value.destination_1,
           destination_2: application.value.destination_2,
           destination_3: application.value.destination_3,
@@ -409,7 +426,7 @@ const uploadFiles = async (application_id: string) => {
           text: 'Application added successfully!',
           icon: 'success',
         })
-        await router.push('/applications')
+        changeStepStatus();
       }
     })
     .catch((e) => {
@@ -419,6 +436,33 @@ const uploadFiles = async (application_id: string) => {
         icon: 'error',
       })
     })
+}
+
+const changeStepStatus = async () => {
+  try {
+    let step = new Step();
+    step.tag = '1_2';
+    step.status = 'in_progress';
+    await axios.put(`http://127.0.0.1:8000/api/steps/`+user.value.id, step)
+      .then(async (response) => {
+        await router.push('/applications');
+      });
+  } catch (e) {
+    console.log(e);
+    if (e.response?.data?.error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Ooops..',
+        text: e.response.data.error,
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Ooops..',
+        text: "An unknown error has occurred",
+      })
+    }
+  }
 }
 
 const getIscedCodes = async () => {
@@ -445,7 +489,7 @@ const getUniversities = async () => {
     const response = await axios.get("http://127.0.0.1:8000/api/universities");
     response.data.universities.forEach((university: any) => {
       university.isced_codes = university.isced_codes.split(',');
-      universities.value.push(new Universty(university));
+      universities.value.push(new University(university));
     })
   } catch (error) {
     console.log('error', error)
@@ -475,13 +519,63 @@ const getCountries = async () => {
   }
 }
 
+const getUser = async () => {
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/api/user/${auth_user.value.id}`);
+    user.value = new User(response.data.user);
+    application.value.email = user.value.email;
+    application.value.last_name = user.value.family_name;
+    application.value.first_name = user.value.name;
+    application.value.date_of_birth = user.value.date_of_birth;
+    application.value.phone = user.value.phone_number;
+    application.value.id_number = user.value.identity_no;
+    application.value.current_study_year = user.value.year;
+    let university_index = universities.value.findIndex(item => item.id == user.value.home_university);
+    if(university_index >= 0) {
+      home_university.value = universities.value[university_index];
+    }
+    let degree_index = degrees.value.findIndex(item => item.id == user.value.degree);
+    if(degree_index >= 0) {
+      degree.value = degrees.value[degree_index];
+    }
+  } catch (error) {
+    console.log('error', error)
+    Swal.fire({
+      title: 'Error!',
+      text: error.response.data.message,
+      icon: 'error',
+    })
+  }
+
+  is_loading.value = false;
+}
+
+const getDegrees = async () => {
+  try {
+    const response = await axios.get("http://127.0.0.1:8000/api/degrees");
+    response.data.degrees.forEach((degree: any) => {
+      degrees.value.push(new Degree(degree));
+    })
+  } catch (error) {
+    console.log('error', error)
+    Swal.fire({
+      title: 'Error!',
+      text: error.response.data.message,
+      icon: 'error',
+    })
+  }
+}
+
 onMounted(async () => {
   if (auth.user !== null) {
-    user.value = new AuthUser(JSON.parse(auth.user));
+    auth_user.value = new AuthUser(JSON.parse(auth.user));
+    user.value.id = auth_user.value.id;
+    application.value.user_id = auth_user.value.id;
   }
-  application.value.user_id = user.value.id;
+  await getDegrees();
   await getCountries();
   await getIscedCodes();
+  await getUser();
 })
 </script>
 

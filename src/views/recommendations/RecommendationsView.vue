@@ -2,7 +2,7 @@
   <LayoutAuthenticated>
     <SectionMain>
       <div class="flex justify-between items-center">
-        <SectionTitleLineWithButton :icon="mdiSchool" title="Universities"/>
+        <SectionTitleLineWithButton :icon="mdiLightbulbOn" title="Recommendations"/>
       </div>
 
       <template v-if="is_loading">
@@ -11,46 +11,48 @@
       <template v-else>
         <div>
           <div class="justify-end flex py-2">
-            <FormControl v-model="searchValue" @input="search()" type="text" :icon="mdiTableSearch" class="w-[400px]" placeholder="Search ... " borderless/>
+            <RouterLink to="/recommend-university">
+              <BaseButton type="button" color="info" label="Get Recommendation"/>
+            </RouterLink>
           </div>
 
           <CardBox has-table>
             <table>
               <thead>
               <tr>
-                <th>Name</th>
-                <th>Country</th>
-                <th>Erasmus Code</th>
-                <th>Years</th>
+                <th># (Newest First)</th>
+                <th>Created At</th>
+                <th>Status</th>
                 <th />
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(university, university_index) in itemsPaginated" :key="university.id">
-                <td data-label="Name">
-                  {{ university.name }}
+              <tr v-for="(recommendation, recommendation_index) in itemsPaginated" :key="recommendation.id">
+                <td data-label="#">
+                  {{ recommendation_index + 1 }}
                 </td>
-                <td data-label="Country">
-                  {{ university.country }}
+                <td data-label="Created At">
+                  {{ recommendation.created_at }}
                 </td>
-                <td data-label="Erasmus Code">
-                  {{ university.code }}
-                </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                  <small class="text-gray-500 dark:text-slate-400">
-                    <template v-for="(year, year_index) in university.years">
-                      {{year}} <span v-if="year_index <= university.years.length - 2">,</span>
-                    </template>
-                  </small>
+                <td data-label="Status">
+                  <template v-if="recommendation.status === 'in_progress'">
+                    <p class="text-yellow-500 font-semibold">In progress ...</p>
+                  </template>
+                  <template v-else-if="recommendation.status === 'finished'">
+                    <p class="text-green-500 font-semibold">Finished</p>
+                  </template>
+                  <template v-else>
+                    {{ recommendation.status }}
+                  </template>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                   <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                    <BaseButton color="info" :icon="mdiEye" small :to="'edit-university/'+university.id" />
+                    <BaseButton color="info" :icon="mdiEye" small :to="'view-recommendation/'+recommendation.id" />
                     <BaseButton
                       color="danger"
                       :icon="mdiTrashCan"
                       small
-                      @click="deleteUniversity(university.id, university_index)"
+                      @click="deleteRecommendation(recommendation.id, recommendation_index)"
                     />
                   </BaseButtons>
                 </td>
@@ -83,7 +85,7 @@
 <script setup lang="ts">
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import {mdiSchool, mdiTrashCan, mdiEye, mdiFileImportOutline,mdiTableSearch} from '@mdi/js'
+import {mdiLightbulbOn, mdiTrashCan, mdiEye} from '@mdi/js'
 import SectionMain from '@/components/SectionMain.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import {computed, onMounted, ref} from "vue";
@@ -92,23 +94,22 @@ import BaseLevel from '@/components/BaseLevel.vue'
 import CardBox from '@/components/CardBox.vue'
 import axios from "axios";
 import Swal from 'sweetalert2'
-import {University} from "../../types/universities/University";
-import FormControl from '@/components/FormControl.vue'
+import {RecommendationCriteria} from "../../types/recommendations/RecommendationCriteria";
+import {AuthUser} from "../../types/AuthUser";
+import {useAuthStore} from "../../stores/auth";
 
 const perPage = ref(10);
 const currentPage = ref(0);
 const itemsPaginated = computed(() =>
-  filtered_universities.value.slice(perPage.value * currentPage.value, perPage.value * (currentPage.value + 1))
+  filtered_recommendations.value.slice(perPage.value * currentPage.value, perPage.value * (currentPage.value + 1))
 );
 const is_loading = ref(true);
-const universities = ref<University[]>([]);
-const filtered_universities = ref<University[]>([]);
-const searchValue = ref('');
-
-const numPages = computed(() => Math.ceil(filtered_universities.value.length / perPage.value))
-
+const recommendations = ref<RecommendationCriteria[]>([]);
+const filtered_recommendations = ref<RecommendationCriteria[]>([]);
+const numPages = computed(() => Math.ceil(filtered_recommendations.value.length / perPage.value))
 const currentPageHuman = computed(() => currentPage.value + 1)
-
+const auth_user = ref(new AuthUser());
+const auth = useAuthStore();
 const pagesList = computed(() => {
   const pagesList = []
 
@@ -119,20 +120,9 @@ const pagesList = computed(() => {
   return pagesList
 })
 
-const search = () => {
-  setTimeout(() => {
-    filtered_universities.value = universities.value.filter((university) => {
-      return (
-        university.name.toLowerCase().includes(searchValue.value.toLowerCase()) ||
-        university.country.toLowerCase().includes(searchValue.value.toLowerCase())
-      );
-    });
-  }, 1000);
-}
-
-const deleteUniversity = (id: number, index: number) => {
+const deleteRecommendation = (id: number, index: number) => {
   Swal.fire({
-    title: 'Are you sure that you want to delete this university?',
+    title: 'Are you sure that you want to delete this recommendation?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3085d6',
@@ -140,15 +130,15 @@ const deleteUniversity = (id: number, index: number) => {
     confirmButtonText: 'Yes'
   }).then((result) => {
     if (result.isConfirmed) {
-      axios.delete(`http://127.0.0.1:8000/api/universities/${id}`)
+      axios.delete(`http://127.0.0.1:8000/api/recommendations/${id}`)
         .then((response) => {
           Swal.fire({
             title: 'Success',
             icon: 'success',
-            html: 'University deleted successfully!',
-            showCancelButton: false,
+            html: 'Recommendation deleted successfully!',
+            showCloseButton: true
           })
-          universities.value.splice(index,1);
+          filtered_recommendations.value.splice(index,1);
         })
         .catch((error) => {
           console.log('eroare: ', error);
@@ -157,14 +147,15 @@ const deleteUniversity = (id: number, index: number) => {
   })
 }
 
-const getUniversities = async () => {
+const getRecommendations = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/universities");
-    response.data.universities.forEach((university: any) => {
-      university.isced_codes = university.isced_codes.split(',');
-      universities.value.push(new University(university));
+    const response = await axios.get("http://127.0.0.1:8000/api/recommendations/?user_id="+auth_user.value.id);
+    response.data.recommendations.forEach((recommendation: any) => {
+      recommendations.value.push(new RecommendationCriteria(recommendation));
     })
-    filtered_universities.value = JSON.parse(JSON.stringify(universities.value));
+    filtered_recommendations.value = JSON.parse(JSON.stringify(recommendations.value));
+    console.log('recommendations.value',recommendations.value)
+
   } catch (error) {
     console.log('error', error)
     Swal.fire({
@@ -177,6 +168,9 @@ const getUniversities = async () => {
 }
 
 onMounted(() => {
-  getUniversities();
+  if (auth.user !== null) {
+    auth_user.value = new AuthUser(JSON.parse(auth.user));
+  }
+  getRecommendations();
 })
 </script>

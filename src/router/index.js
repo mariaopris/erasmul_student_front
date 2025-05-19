@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/HomeView.vue'
 
 const routes = [
@@ -16,6 +16,16 @@ const routes = [
     component: () => import('../views/universities/UniversitiesView.vue')
   },
   {
+    path: '/recommendations',
+    name: 'recommendations',
+    component: () => import('../views/recommendations/RecommendationsView.vue')
+  },
+  {
+    path: '/view-recommendation/:id',
+    name: 'view-recommendation',
+    component: () => import('../views/recommendations/ViewRecommendation.vue')
+  },
+  {
     path: '/edit-university/:id',
     name: 'edit-university',
     component: () => import('../views/universities/EditUniversity.vue')
@@ -23,7 +33,7 @@ const routes = [
   {
     path: '/recommend-university',
     name: 'recommend-university',
-    component: () => import('../views/universities/RecommendUniversities.vue')
+    component: () => import('../views/recommendations/RecommendUniversities.vue')
   },
   {
     path: '/students',
@@ -54,6 +64,46 @@ const routes = [
     path: '/view-ticket/:id',
     name: 'view-ticket',
     component: () => import('../views/tickets/ViewTicket.vue')
+  },
+  {
+    path: '/courses',
+    name: 'courses',
+    component: () => import('../views/courses/CoursesView.vue')
+  },
+  {
+    path: '/edit-course/:id',
+    name: 'edit-course',
+    component: () => import('../views/courses/EditCourse.vue')
+  },
+  {
+    path: '/certificate-of-arrival',
+    name: 'certificate-of-arrival',
+    component: () => import('../views/documents/CertificateOfArrival.vue')
+  },
+  {
+    path: '/activity-report',
+    name: 'activity-report',
+    component: () => import('../views/documents/ActivityReport.vue')
+  },
+  {
+    path: '/learning-agreement',
+    name: 'learning-agreement',
+    component: () => import('../views/documents/LearningAgreement.vue')
+  },
+  {
+    path: '/learning-agreement-during',
+    name: 'learning-agreement-during',
+    component: () => import('../views/documents/DuringMobilityLearningAgreement.vue')
+  },
+  {
+    path: '/learning-agreement-after',
+    name: 'learning-agreement-after',
+    component: () => import('../views/documents/AfterMobilityLearningAgreement.vue')
+  },
+  {
+    path: '/travel-authorization',
+    name: 'travel-authorization',
+    component: () => import('../views/documents/TravelAuthorization.vue')
   },
   {
     meta: {
@@ -91,7 +141,7 @@ const routes = [
     meta: {
       title: 'Login'
     },
-    path: '/',
+    path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue')
   },
@@ -114,11 +164,8 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    return savedPosition || { top: 0 }
-  }
 })
 
 export default router

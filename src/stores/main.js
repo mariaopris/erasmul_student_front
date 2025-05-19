@@ -3,8 +3,10 @@ import { ref, computed } from 'vue'
 import axios from 'axios'
 
 export const useMainStore = defineStore('main', () => {
-  const userName = ref('John Doe')
+  const userName = ref('John')
   const userEmail = ref('doe.doe.doe@example.com')
+  const userId = ref(0)
+  const userFamilyName = ref('Doe')
 
   const userAvatar = computed(
     () =>
@@ -25,6 +27,12 @@ export const useMainStore = defineStore('main', () => {
     }
     if (payload.email) {
       userEmail.value = payload.email
+    }
+    if (payload.id) {
+      userId.value = payload.id
+    }
+    if (payload.family_name) {
+      userFamilyName.value = payload.family_name
     }
   }
 

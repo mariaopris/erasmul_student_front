@@ -1,8 +1,11 @@
 import {IscedCode} from "./IscedCode";
 import axios from "axios";
 import Swal from "sweetalert2";
+import {Department} from "./Department";
+import {Degree} from "./Degree";
+import {Course} from "./Course";
 
-export class Universty {
+export class University {
   public id: number;
   public name: string;
   public email: string;
@@ -14,8 +17,12 @@ export class Universty {
   public years: string[] | string;
   public languages: [] | string;
   public description: string;
+  public departments: Department[];
+  public degrees: Degree[];
+  public courses: Course[];
+  public no_required_credits: number;
 
-  constructor(data: Universty | void) {
+  constructor(data: University | void) {
     if (data === undefined) {
       this.id = 0;
       this.name = '';
@@ -28,6 +35,10 @@ export class Universty {
       this.years = <string[]>[];
       this.languages = [];
       this.description = '';
+      this.departments = <Department[]>[];
+      this.degrees = <Degree[]>[];
+      this.courses = <Course[]>[];
+      this.no_required_credits = 0;
     }
     else {
       this.id = data.id;
@@ -45,6 +56,25 @@ export class Universty {
         this.languages = JSON.parse(data.languages);
       }
       this.description = data.description;
+      this.departments = <Department[]>[];
+      if(data.hasOwnProperty('departments')) {
+        data.departments.forEach((department: Department) => {
+          this.departments.push(new Department(department))
+        })
+      }
+      this.degrees = <Degree[]>[];
+      if(data.hasOwnProperty('degrees')) {
+        data.degrees.forEach((degree: Degree) => {
+          this.degrees.push(new Degree(degree))
+        })
+      }
+      this.courses = <Course[]>[];
+      if(data.hasOwnProperty('courses')) {
+        data.courses.forEach((course: Course) => {
+          this.courses.push(new Course(course))
+        })
+      }
+      this.no_required_credits = data.no_required_credits;
     }
   }
 
