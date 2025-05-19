@@ -2,15 +2,9 @@
   <CardBox>
     <BaseLevel type="justify-between">
       <div class="flex items-center justify-center space-x-3">
-        <UserAvatarCurrentUser/>
         <div class="space-y-3 text-center md:text-left lg:mx-12">
-          <h1 class="text-2xl">Hello, <b>{{ auth_user.name }} {{ auth_user.family_name }}</b></h1>
+          <h1 class="text-2xl">Hello, <b>{{ auth_user.name }} {{ auth_user.family_name }} =]</b></h1>
         </div>
-      </div>
-      <div>
-        <FormField>
-          <FormFilePicker label="Upload Photo" />
-        </FormField>
       </div>
     </BaseLevel>
   </CardBox>
